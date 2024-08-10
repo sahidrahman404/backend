@@ -1,0 +1,51 @@
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { z } from "zod";
+import { sql } from "drizzle-orm";
+
+export const users = sqliteTable("users", {
+  id: text("id").notNull().primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").unique(),
+  passwordHash: text("password_hash"),
+  emailVerified: integer("email_verified", { mode: "boolean" }),
+  createdAt: integer("timestamp", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(current_timestamp)`),
+});
+
+export const userPasswordSchema = z
+  .string()
+  .min(8, { message: "Password must be at least 8 characters long" })
+  .regex(/[!@#$%^&*(),.?":{}|<>]/, {
+    message: "Password must contain at least one special character",
+  })
+  .regex(/\d/, { message: "Password must contain at least one digit" })
+  .regex(/[a-z]/, {
+    message: "Password must contain at least one lowercase letter",
+  })
+  .regex(/[A-Z]/, {
+    message: "Password must contain at least one uppercase letter",
+  });
+
+export const userRegistrationSchema = z.object({
+  name: z
+    .string()
+    .min(1, { message: "Name must be at least 1 character long" })
+    .transform((value) =>
+      value
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+    ),
+  email: z.string().email(),
+  password: userPasswordSchema,
+});
+
+export type UserRegistration = z.infer<typeof userRegistrationSchema>;
+
+export const userLoginSchema = z.object({
+  email: z.string().email(),
+  password: userPasswordSchema,
+});
+
+export type UserLogin = z.infer<typeof userLoginSchema>;
