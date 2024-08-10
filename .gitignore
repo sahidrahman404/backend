@@ -1,0 +1,5 @@
+node_modules
+.yarn
+backend.db
+dist
+.env
