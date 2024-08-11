@@ -18,6 +18,7 @@ import { config } from "@/config";
 import { sendResetToken } from "@/reset-password-token/resetPasswordToken";
 import { hashConfig, lucia } from "@/lucia/luciaServices";
 import { hash } from "@node-rs/argon2";
+import { convertSessionCookieMaxAgeToMsInPlace } from "@/session/sessionServices";
 
 async function createPasswordResetTokenService(userId: string, db: DB) {
   const tokenId = await db.transaction(async (tx) => {
@@ -77,6 +78,7 @@ export async function resetPasswordService(
 
     const session = await lucia.createSession(token.userId, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
+    convertSessionCookieMaxAgeToMsInPlace(sessionCookie);
     return sessionCookie;
   });
   return sessionCookie;

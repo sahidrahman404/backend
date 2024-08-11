@@ -8,6 +8,8 @@ import {
 } from "@/email-verification-token/emailVerificationTokenRepositories";
 import { generateIdFromEntropySize } from "lucia";
 import AppError from "@/error/appError";
+import { config } from "@/config";
+import { sendVerificationCode } from "@/email-verification-token/emailVerification";
 
 export async function generateEmailVerificationTokenService(
   userId: string,
@@ -30,6 +32,22 @@ export async function generateEmailVerificationTokenService(
     return tokenId;
   });
   return tokenId;
+}
+
+export async function resendEmailVerificationTokenService(
+  userId: string,
+  email: string,
+  db: DB,
+) {
+  await db.transaction(async (tx) => {
+    const verificationToken = await generateEmailVerificationTokenService(
+      userId,
+      email,
+      tx,
+    );
+    const verificationLink = `${config.server.basePath}/v1/email-verification/${verificationToken}`;
+    await sendVerificationCode(email, verificationLink);
+  });
 }
 
 export async function verifyTokenService(verificationToken: string, db: DB) {
