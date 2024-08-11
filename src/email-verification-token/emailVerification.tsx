@@ -10,6 +10,7 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 import { resend } from "@/resend/resendServices";
+import { config } from "@/config";
 
 export const VerificationLinkEmail = ({
   verificationLink,
@@ -90,10 +91,14 @@ export async function sendVerificationCode(
   email: string,
   verificationLink: string,
 ) {
-  await resend.emails.send({
-    from: "you@example.com",
-    to: "user@gmail.com",
+  const { error, data } = await resend.emails.send({
+    from: config.email.from,
+    to:
+      process.env.NODE_ENV === "production"
+        ? "delivered@resend.dev"
+        : "delivered@resend.dev",
     subject: "Email Verification",
     react: <VerificationLinkEmail verificationLink={verificationLink} />,
   });
+  console.log({ error, data });
 }

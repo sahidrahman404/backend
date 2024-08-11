@@ -10,6 +10,7 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 import { resend } from "@/resend/resendServices";
+import { config } from "@/config";
 
 export const ResetTokenEmail = ({
   verificationLink,
@@ -88,9 +89,9 @@ const text = {
 
 export async function sendResetToken(email: string, verificationLink: string) {
   await resend.emails.send({
-    from: "you@example.com",
-    to: "user@gmail.com",
-    subject: "Email Verification",
+    from: config.email.from,
+    to: process.env.NODE_ENV === "production" ? email : "delivered@resend.dev",
+    subject: "Email Reset Password",
     react: <ResetTokenEmail verificationLink={verificationLink} />,
   });
 }
