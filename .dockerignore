@@ -32,3 +32,9 @@ node_modules/minipass-sized/.*
 !node_modules/minipass-sized/**/coverage-map.js
 !node_modules/minipass-sized/**/index.js
 fly.toml
+node_modules
+.yarn
+backend.db
+dist
+.env
+.envrc

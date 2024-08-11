@@ -4,3 +4,4 @@ backend.db
 dist
 .env
 .envrc
+identifier.sqlite
