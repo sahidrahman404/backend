@@ -1,6 +1,8 @@
 import express from "express";
 import { validateData } from "@/middleware/middlewareServices";
 import {
+  type ResetPassword,
+  resetPasswordSchema,
   type UpdateUserName,
   updateUserNameSchema,
   type UserLogin,
@@ -11,6 +13,7 @@ import {
 import {
   createUserService,
   getUserStatsService,
+  resetPassword,
   signUserOut,
   updateUserNameService,
   verifyUserService,
@@ -134,6 +137,40 @@ user.post(
       res.status(200).json({
         success: true,
       });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+user.post(
+  "/reset-password",
+  validateData(resetPasswordSchema),
+  async (req, res, next) => {
+    try {
+      if (!res.locals.user) {
+        throw new AppError(
+          401,
+          "You are not authorized to access this resource",
+        );
+      }
+      const { oldPassword, newPassword } = req.body as ResetPassword;
+      const sessionCookie = await resetPassword(
+        oldPassword,
+        newPassword,
+        res.locals.user.id,
+        req.db,
+      );
+      res
+        .status(200)
+        .cookie(
+          sessionCookie.name,
+          sessionCookie.value,
+          sessionCookie.attributes,
+        )
+        .json({
+          success: true,
+        });
     } catch (err) {
       next(err);
     }

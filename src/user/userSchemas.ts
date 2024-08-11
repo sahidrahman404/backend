@@ -59,3 +59,10 @@ export const updateUserNameSchema = z.object({
 });
 
 export type UpdateUserName = z.infer<typeof updateUserNameSchema>;
+
+export const resetPasswordSchema = z.object({
+  oldPassword: userPasswordSchema,
+  newPassword: userPasswordSchema,
+});
+
+export type ResetPassword = z.infer<typeof resetPasswordSchema>;

@@ -60,7 +60,7 @@ oauth.get("/google/callback", async (req, res, next) => {
     res
       .status(302)
       .cookie(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
-      .redirect(config.frontend.basePath);
+      .redirect(`${config.frontend.basePath}/dashboard`);
   } catch (err) {
     next(err);
   }
@@ -95,7 +95,7 @@ oauth.get("/facebook/callback", async (req, res, next) => {
     res
       .status(302)
       .cookie(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
-      .redirect(config.frontend.basePath);
+      .redirect(`${config.frontend.basePath}/dashboard`);
   } catch (err) {
     next(err);
   }

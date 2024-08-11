@@ -10,9 +10,9 @@ import {
   insertUser,
   updateLastLoggedOutAt,
   updateUserEmailVerified,
-  updateUserPassword,
   updateUserName,
   getUserFacebookId,
+  updateUserPassword,
 } from "@/user/userRepositories";
 import { generateEmailVerificationTokenService } from "@/email-verification-token/emailVerificationTokenServices";
 import { hash, verify } from "@node-rs/argon2";
@@ -26,9 +26,6 @@ import type {
   FacebookUserProfile,
   GoogleUserProfile,
 } from "@/oauth/oauthSchemas";
-import { users } from "@/user/userSchemas";
-import { eq, sql } from "drizzle-orm";
-import type { Locals } from "express";
 
 export async function createUserService(
   email: string,
@@ -116,18 +113,6 @@ export async function verifyUserService(
     return sessionCookie;
   });
   return sessionCookie;
-}
-
-export async function getUserByEmailService(email: string, db: DB) {
-  return await getUserByEmail(email, db);
-}
-
-export async function updateUserPasswordService(
-  userId: string,
-  passwordHash: string,
-  db: DB,
-) {
-  await updateUserPassword(userId, passwordHash, db);
 }
 
 export async function createGoogleUser(googleUser: GoogleUserProfile, db: DB) {
@@ -227,4 +212,36 @@ export async function updateUserNameService(
   db: DB,
 ) {
   await updateUserName(userId, name, db);
+}
+
+export async function resetPassword(
+  oldPassword: string,
+  newPassword: string,
+  userId: string,
+  db: DB,
+) {
+  const sessionCookie = await db.transaction(async (tx) => {
+    const user = await getUserById(userId, tx);
+    if (!user) {
+      throw new AppError(400, "Bad Auth");
+    }
+    if (!user.passwordHash) {
+      throw new AppError(400, "Bad Auth");
+    }
+    const validOldPassword = await verify(
+      user.passwordHash,
+      oldPassword,
+      hashConfig,
+    );
+    if (!validOldPassword) {
+      throw new AppError(400, "Invalid old password");
+    }
+    const passwordHash = await hash(newPassword, hashConfig);
+    await updateUserPassword(userId, passwordHash, tx);
+    const session = await lucia.createSession(user.id, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    convertSessionCookieMaxAgeToMsInPlace(sessionCookie);
+    return sessionCookie;
+  });
+  return sessionCookie;
 }
