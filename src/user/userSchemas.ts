@@ -8,6 +8,10 @@ export const users = sqliteTable("users", {
   email: text("email").unique(),
   passwordHash: text("password_hash"),
   emailVerified: integer("email_verified", { mode: "boolean" }),
+  googleId: text("google_id").unique(),
+  facebookId: text("facebook_id").unique(),
+  loggedInCount: integer("logged_in_count").notNull().default(0),
+  lastLoggedOutAt: integer("last_logged_out_at", { mode: "timestamp" }),
   createdAt: integer("timestamp", { mode: "timestamp" })
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -37,7 +41,7 @@ export const userRegistrationSchema = z.object({
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" "),
     ),
-  email: z.string().email(),
+  email: z.string().email("Invalid email address"),
   password: userPasswordSchema,
 });
 
@@ -49,3 +53,9 @@ export const userLoginSchema = z.object({
 });
 
 export type UserLogin = z.infer<typeof userLoginSchema>;
+
+export const updateUserNameSchema = z.object({
+  name: z.string().min(1, "Name must be at least 1 characters long"),
+});
+
+export type UpdateUserName = z.infer<typeof updateUserNameSchema>;
