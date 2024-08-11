@@ -93,10 +93,7 @@ export async function sendVerificationCode(
 ) {
   const { error, data } = await resend.emails.send({
     from: config.email.from,
-    to:
-      process.env.NODE_ENV === "production"
-        ? "delivered@resend.dev"
-        : "delivered@resend.dev",
+    to: process.env.NODE_ENV === "production" ? email : "delivered@resend.dev",
     subject: "Email Verification",
     react: <VerificationLinkEmail verificationLink={verificationLink} />,
   });
