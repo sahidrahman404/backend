@@ -8,6 +8,8 @@ import { StatusCodes } from "http-status-codes";
 import AppError from "@/error/appError";
 import { db } from "@/db/dbServices";
 import { lucia } from "@/lucia/luciaServices";
+import type { User } from "lucia";
+import { convertSessionCookieMaxAgeToMsInPlace } from "@/session/sessionServices";
 
 export function validateData(schema: z.ZodObject<any, any>) {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -76,10 +78,9 @@ export async function validateRequest(
 
   const { session, user } = await lucia.validateSession(sessionId);
   if (session && session.fresh) {
-    res.appendHeader(
-      "Set-Cookie",
-      lucia.createSessionCookie(session.id).serialize(),
-    );
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    convertSessionCookieMaxAgeToMsInPlace(sessionCookie);
+    res.appendHeader("Set-Cookie", sessionCookie.serialize());
   }
   if (!session) {
     res.appendHeader(
@@ -87,7 +88,14 @@ export async function validateRequest(
       lucia.createBlankSessionCookie().serialize(),
     );
   }
-  res.locals.user = user;
+  res.locals.user = user as User & {
+    name: string;
+    googleId: string | null;
+    facebookId: string | null;
+    email: string;
+    emailVerified: boolean;
+    createdAt: Date;
+  };
   res.locals.session = session;
   return next();
 }
