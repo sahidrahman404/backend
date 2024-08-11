@@ -11,6 +11,9 @@ declare global {
     interface Locals {
       user:
         | (User & {
+            name: string;
+            googleId: string | null;
+            facebookId: string | null;
             email: string;
             emailVerified: boolean;
             createdAt: Date;
