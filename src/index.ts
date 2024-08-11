@@ -10,9 +10,18 @@ import {
 } from "@/middleware/middlewareServices";
 import emailVerificationRouter from "@/email-verification-token";
 import resetPasswordRouter from "@/reset-password-token";
+import cookieParser from "cookie-parser";
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://papiayam.com"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(injectDatabase);
 app.use(validateRequest);
