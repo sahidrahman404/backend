@@ -11,6 +11,8 @@ import {
 import emailVerificationRouter from "@/email-verification-token";
 import resetPasswordRouter from "@/reset-password-token";
 import cookieParser from "cookie-parser";
+import sessionRouter from "@/session";
+import oauthRouter from "@/oauth";
 
 const app = express();
 app.use(
@@ -35,6 +37,8 @@ v1.get("/health-check", (_, res) => {
 v1.use(userRouter);
 v1.use(emailVerificationRouter);
 v1.use(resetPasswordRouter);
+v1.use(oauthRouter);
+v1.use(sessionRouter);
 
 app.use("/v1", v1);
 
